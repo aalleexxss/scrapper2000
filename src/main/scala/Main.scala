@@ -28,7 +28,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-    //2D array with all folders and abbreviations for 2000 census data
+    //2D array with all folders and abbreviations for 2010 census data
     val locations = Array( Array("0US_Summary", "us"),
       Array("Alabama", "al"),
       Array("Alaska", "ak"),
@@ -85,21 +85,13 @@ object Main {
     )
 
 
-    //downloads zip files from 2000 census data, unzips files
+    //downloads zip files from 2010 census data, unzips files
     for (i <- locations) {
       val state = i(0)
       val abbreviation = i(1)
-      val geoUrl = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}geo.upl.zip"
-      val url1 = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}00001.upl.zip"
-      val url2 = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}00002.upl.zip"
-
-      fileDownload(geoUrl, "geo.zip")
-      fileDownload(url1, "1.zip")
-      fileDownload(url2, "2.zip")
-
-      unzip("geo.zip")
+      val url2 = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}2010.pl.zip"
+      fileDownload(url2, "1.zip")
       unzip("1.zip")
-      unzip("2.zip")
     }
 
     //sets up field names for 00001.csv and 00002.csv
