@@ -7,10 +7,9 @@ import scala.io.Source
 import util.Try
 
 object Main {
-
   //Downloads a file given some url and file name
   def fileDownload(url: String, fileName: String) = {
-    new URL(url) #> new File(fileName) !!
+    new URL(url) #> new File("datasets/",fileName) !!
   }
 
   //Unzips zip files
@@ -26,9 +25,8 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-
     //2D array with all folders and abbreviations for 2000 census data
-    val locations = Array( Array("0US_Summary", "us"),
+    val locations = Array(
       Array("Alabama", "al"),
       Array("Alaska", "ak"),
       Array("Arizona", "az"),
@@ -56,6 +54,7 @@ object Main {
       Array("Mississippi", "ms"),
       Array("Missouri", "mo"),
       Array("Montana", "mt"),
+      Array("National", "us"),
       Array("Nebraska", "ne"),
       Array("Nevada", "nv"),
       Array("New_Hampshire", "nh"),
@@ -84,121 +83,123 @@ object Main {
     )
 
 
+    var counter = 1
     //downloads zip files from 2000 census data, unzips files
     for (i <- locations) {
       val state = i(0)
       val abbreviation = i(1)
-      val geoUrl = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}geo.upl.zip"
-      val url1 = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}00001.upl.zip"
-      val url2 = s"https://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/${state}/${abbreviation}00002.upl.zip"
+      var url = ""
+      if(i(0) == "National") {
+        url = s"https://www2.census.gov/programs-surveys/decennial/2020/data/01-Redistricting_File--PL_94-171/National/us2020.npl.zip"
+      } else {
+        url = s"https://www2.census.gov/programs-surveys/decennial/2020/data/01-Redistricting_File--PL_94-171/${state}/${abbreviation}2020.pl.zip"
+      }
 
-      fileDownload(geoUrl, "geo.zip")
-      fileDownload(url1, "1.zip")
-      fileDownload(url2, "2.zip")
-
-      unzip("geo.zip")
-      unzip("1.zip")
-      unzip("2.zip")
+      fileDownload(url, "2020.zip")
+      unzip("datasets/2020.zip")
+      println(counter.toString + "/" + locations.length)
+      counter = counter + 1
     }
 
     //sets up field names for 00001.csv and 00002.csv
-    val file1Name = "tableFiles/PL_PART1.csv"
+    val file1Name = "tableFiles/Segment1.csv"
     var fields1 = ""
     for (line <- Source.fromFile(file1Name).getLines()) {
-      for (lines <- line.split("\"")) {
-        if (lines != ",") {
-          fields1 += lines.split(",")(0) + ","
-        }
-      }
+      fields1 = line
     }
-    fields1 = fields1.substring(1, fields1.length()-1) + "\n"
+    println(fields1)
 
-    val file2Name = "tableFiles/PL_PART2.csv"
+    val file2Name = "tableFiles/Segment2.csv"
     var fields2 = ""
     for (line <- Source.fromFile(file2Name).getLines()) {
-      for (lines <- line.split("\"")) {
-        if (lines != ",") {
-          fields2 += lines.split(",")(0) + ","
-        }
-      }
+      fields2 = line
     }
-    fields2 = fields2.substring(1, fields2.length()-1) + "\n"
+    println(fields2)
+
+    val file3Name = "tableFiles/Segment3.csv"
+    var fields3 = ""
+    for (line <- Source.fromFile(file3Name).getLines()) {
+      fields3 = line
+    }
+    println(fields3)
+
+    val file4Name = "tableFiles/Geohead.csv"
+    var fields4 = ""
+    for (line <- Source.fromFile(file4Name).getLines()) {
+      fields4 = line
+    }
+    println(fields4)
 
     //fills in 00001.csv and 00002.csv with field names and data from upl files
     for (states <- locations) {
       val file1Name = s"${states(1)}00001.csv"
-      val upl1Name = s"${states(1)}00001.upl"
-      val writer1 = new FileWriter(file1Name, true)
+      var pl1Name = ""
+      if(states(0) == "National") {
+        pl1Name = s"${states(1)}000012020.npl"
+      } else {
+        pl1Name = s"${states(1)}000012020.pl"
+      }
+      val writer1 = new FileWriter(new File("datasets/",file1Name), true)
       writer1.write(fields1)
-      for (lines <- Source.fromFile(upl1Name).getLines()) {
-        val writeLine = lines + "\n"
+      for (lines <- Source.fromFile(pl1Name).getLines()) {
+        val tmp = lines
+        val fixed = tmp.replace("|", ",")
+        val writeLine = fixed + "\n"
         writer1.write(writeLine)
       }
       writer1.close()
 
       val file2Name = s"${states(1)}00002.csv"
-      val upl2Name = s"${states(1)}00002.upl"
-      val writer2 = new FileWriter(file2Name, true)
+      var pl2Name = ""
+      if(states(0) == "National") {
+        pl2Name = s"${states(1)}000022020.npl"
+      } else {
+        pl2Name = s"${states(1)}000022020.pl"
+      }
+      val writer2 = new FileWriter(new File("datasets/",file2Name), true)
       writer2.write(fields2)
-      for (lines <- Source.fromFile(upl2Name).getLines()) {
-        val writeLine = lines + "\n"
+      for (lines <- Source.fromFile(pl2Name).getLines()) {
+        val tmp = lines
+        val fixed = tmp.replace("|", ",")
+        val writeLine = fixed + "\n"
         writer2.write(writeLine)
       }
       writer2.close()
-    }
 
-    //sets up the headers for geo files
-    val fileName = "tableFiles/0HEADER.csv"
-    var geoHeaders = ""
-    var lengths = Array[Int]()
-    var firstFlag = true
-    for (line <- Source.fromFile(fileName).getLines()) {
-      val splitLine = line.split(",")
-      if (!firstFlag) {
-        geoHeaders += splitLine(1) + ","
-        lengths = lengths :+ splitLine(2).toFloat.toInt
+      val file3Name = s"${states(1)}00003.csv"
+      var pl3Name = ""
+      if(states(0) == "National") {
+        pl3Name = s"${states(1)}000032020.npl"
       } else {
-        firstFlag = false
+        pl3Name = s"${states(1)}000032020.pl"
       }
-    }
-    geoHeaders = geoHeaders.substring(0, geoHeaders.length()-1) + "\n"
-
-    //iterates through
-    for (states <- locations) {
-      val csvName = s"${states(1)}geo.csv"
-      val uplName = s"${states(1)}geo.upl"
-      val geoWriter = new FileWriter(csvName, true)
-      geoWriter.write(geoHeaders)
-      for (lines <- Source.fromFile(uplName)("ISO-8859-1").getLines()) {
-        var splittingLine = lines
-        var finalLine = ""
-        for (i <- lengths) {
-          finalLine += splittingLine.substring(0, i) + ","
-          splittingLine = splittingLine.substring(i, splittingLine.length())
-        }
-        finalLine += "\n"
-        geoWriter.write(finalLine)
+      val writer3 = new FileWriter(new File("datasets/",file3Name), true)
+      writer3.write(fields3)
+      for (lines <- Source.fromFile(pl3Name).getLines()) {
+        val tmp = lines
+        val fixed = tmp.replace("|", ",")
+        val writeLine = fixed + "\n"
+        writer3.write(writeLine)
       }
-      geoWriter.close()
-    }
+      writer3.close()
 
-
-
-    /* Ignore this for now!
-    for (states <- locations) {
-      val geoCsv = s"${states(1)}geo.csv"
-      val cleanCsv = s"${states(1)}cleanGeo.csv"
-      val geoWriter = new FileWriter(cleanCsv, true)
-      var cleanedLine = ""
-      for (lines <- Source.fromFile(geoCsv).getLines()) {
-        for (elements <- lines.split(",")) {
-          cleanedLine += elements.trim() + ","
-        }
-        cleanedLine = cleanedLine.substring(0, cleanedLine.length()-1) + "\n"
-        geoWriter.write(cleanedLine)
+      val file4Name = s"${states(1)}geo2020.csv"
+      var pl4Name = ""
+      if(states(0) == "National") {
+        pl4Name = s"${states(1)}geo2020.npl"
+      } else {
+        pl4Name = s"${states(1)}geo2020.pl"
       }
+      val writer4 = new FileWriter(new File("datasets/",file4Name), true)
+      writer4.write(fields4)
+      for (lines <- Source.fromFile(pl4Name)("iso-8859-1").getLines()) {
+        val tmp = lines
+        val fixed = tmp.replace("|", ",")
+        val writeLine = fixed + "\n"
+        writer4.write(writeLine)
+      }
+      writer4.close()
     }
 
-     */
   }
 }
