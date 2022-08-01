@@ -6,8 +6,6 @@ import java.util.zip.ZipInputStream
 import scala.io.Source
 import util.Try
 
-
-
 object Main {
 
   //Downloads a file given some url and file name
@@ -27,6 +25,7 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
+
 
     //2D array with all folders and abbreviations for 2000 census data
     val locations = Array( Array("0US_Summary", "us"),
@@ -148,6 +147,58 @@ object Main {
       writer2.close()
     }
 
-  }
+    //sets up the headers for geo files
+    val fileName = "tableFiles/0HEADER.csv"
+    var geoHeaders = ""
+    var lengths = Array[Int]()
+    var firstFlag = true
+    for (line <- Source.fromFile(fileName).getLines()) {
+      val splitLine = line.split(",")
+      if (!firstFlag) {
+        geoHeaders += splitLine(1) + ","
+        lengths = lengths :+ splitLine(2).toFloat.toInt
+      } else {
+        firstFlag = false
+      }
+    }
+    geoHeaders = geoHeaders.substring(0, geoHeaders.length()-1) + "\n"
 
+    //iterates through
+    for (states <- locations) {
+      val csvName = s"${states(1)}geo.csv"
+      val uplName = s"${states(1)}geo.upl"
+      val geoWriter = new FileWriter(csvName, true)
+      geoWriter.write(geoHeaders)
+      for (lines <- Source.fromFile(uplName)("ISO-8859-1").getLines()) {
+        var splittingLine = lines
+        var finalLine = ""
+        for (i <- lengths) {
+          finalLine += splittingLine.substring(0, i) + ","
+          splittingLine = splittingLine.substring(i, splittingLine.length())
+        }
+        finalLine += "\n"
+        geoWriter.write(finalLine)
+      }
+      geoWriter.close()
+    }
+
+
+
+    /* Ignore this for now!
+    for (states <- locations) {
+      val geoCsv = s"${states(1)}geo.csv"
+      val cleanCsv = s"${states(1)}cleanGeo.csv"
+      val geoWriter = new FileWriter(cleanCsv, true)
+      var cleanedLine = ""
+      for (lines <- Source.fromFile(geoCsv).getLines()) {
+        for (elements <- lines.split(",")) {
+          cleanedLine += elements.trim() + ","
+        }
+        cleanedLine = cleanedLine.substring(0, cleanedLine.length()-1) + "\n"
+        geoWriter.write(cleanedLine)
+      }
+    }
+
+     */
+  }
 }
