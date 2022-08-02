@@ -7,7 +7,8 @@ import scala.io.Source
 import util.Try
 
 object Main {
-
+  val t1 = System.nanoTime
+  
   //Downloads a file given some url and file name
   def fileDownload(url: String, fileName: String) = {
     new URL(url) #> new File(fileName) !!
@@ -200,5 +201,7 @@ object Main {
     }
 
      */
+    val duration = (System.nanoTime - t1)
+    println("Code Lasted: " + (duration/1000000000) + " Seconds")
   }
 }
