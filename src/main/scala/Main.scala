@@ -1,7 +1,7 @@
 import scala.language.postfixOps
 import sys.process._
 import java.net.URL
-import java.io.{File, FileInputStream, FileOutputStream, FileWriter, InputStream, PrintWriter}
+import java.io.{BufferedWriter, File, FileInputStream, FileOutputStream, FileWriter, InputStream, PrintWriter}
 import java.util.zip.ZipInputStream
 import scala.io.Source
 import util.Try
@@ -85,6 +85,7 @@ object Main {
 
     var counter = 1
     //downloads zip files from 2000 census data, unzips files
+    /*
     for (i <- locations) {
       val state = i(0)
       val abbreviation = i(1)
@@ -99,7 +100,7 @@ object Main {
       unzip("datasets/2020.zip")
       println(counter.toString + "/" + locations.length)
       counter = counter + 1
-    }
+    }*/
 
     //sets up field names for 00001.csv and 00002.csv
     val file1Name = "tableFiles/Segment1.csv"
@@ -107,28 +108,24 @@ object Main {
     for (line <- Source.fromFile(file1Name).getLines()) {
       fields1 = line
     }
-    println(fields1)
 
     val file2Name = "tableFiles/Segment2.csv"
     var fields2 = ""
     for (line <- Source.fromFile(file2Name).getLines()) {
       fields2 = line
     }
-    println(fields2)
 
     val file3Name = "tableFiles/Segment3.csv"
     var fields3 = ""
     for (line <- Source.fromFile(file3Name).getLines()) {
       fields3 = line
     }
-    println(fields3)
 
     val file4Name = "tableFiles/Geohead.csv"
     var fields4 = ""
     for (line <- Source.fromFile(file4Name).getLines()) {
       fields4 = line
     }
-    println(fields4)
 
     //fills in 00001.csv and 00002.csv with field names and data from upl files
     for (states <- locations) {
@@ -139,11 +136,12 @@ object Main {
       } else {
         pl1Name = s"${states(1)}000012020.pl"
       }
-      val writer1 = new FileWriter(new File("datasets/",file1Name), true)
-      writer1.write(fields1)
-      for (lines <- Source.fromFile(pl1Name).getLines()) {
+      val writer1 = new BufferedWriter(new FileWriter(new File("datasets/",file1Name), true))
+      writer1.write(fields1 + "\n")
+      for (lines <- Source.fromFile(pl1Name)("iso-8859-1").getLines()) {
         val tmp = lines
-        val fixed = tmp.replace("|", ",")
+        val prefixed = tmp.replace(",", "")
+        val fixed = prefixed.replace("|", ",")
         val writeLine = fixed + "\n"
         writer1.write(writeLine)
       }
@@ -156,11 +154,12 @@ object Main {
       } else {
         pl2Name = s"${states(1)}000022020.pl"
       }
-      val writer2 = new FileWriter(new File("datasets/",file2Name), true)
-      writer2.write(fields2)
-      for (lines <- Source.fromFile(pl2Name).getLines()) {
+      val writer2 = new BufferedWriter(new FileWriter(new File("datasets/",file2Name), true))
+      writer2.write(fields1 + "\n")
+      for (lines <- Source.fromFile(pl2Name)("iso-8859-1").getLines()) {
         val tmp = lines
-        val fixed = tmp.replace("|", ",")
+        val prefixed = tmp.replace(",", "")
+        val fixed = prefixed.replace("|", ",")
         val writeLine = fixed + "\n"
         writer2.write(writeLine)
       }
@@ -173,11 +172,12 @@ object Main {
       } else {
         pl3Name = s"${states(1)}000032020.pl"
       }
-      val writer3 = new FileWriter(new File("datasets/",file3Name), true)
-      writer3.write(fields3)
-      for (lines <- Source.fromFile(pl3Name).getLines()) {
+      val writer3 = new BufferedWriter(new FileWriter(new File("datasets/",file3Name), true))
+      writer3.write(fields3 + "\n")
+      for (lines <- Source.fromFile(pl3Name)("iso-8859-1").getLines()) {
         val tmp = lines
-        val fixed = tmp.replace("|", ",")
+        val prefixed = tmp.replace(",", "")
+        val fixed = prefixed.replace("|", ",")
         val writeLine = fixed + "\n"
         writer3.write(writeLine)
       }
@@ -190,11 +190,12 @@ object Main {
       } else {
         pl4Name = s"${states(1)}geo2020.pl"
       }
-      val writer4 = new FileWriter(new File("datasets/",file4Name), true)
-      writer4.write(fields4)
+      val writer4 = new BufferedWriter(new FileWriter(new File("datasets/",file4Name), true))
+      writer4.write(fields4 + "\n")
       for (lines <- Source.fromFile(pl4Name)("iso-8859-1").getLines()) {
         val tmp = lines
-        val fixed = tmp.replace("|", ",")
+        val prefixed = tmp.replace(",", "")
+        val fixed = prefixed.replace("|", ",")
         val writeLine = fixed + "\n"
         writer4.write(writeLine)
       }
