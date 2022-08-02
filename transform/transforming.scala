@@ -34,8 +34,8 @@ object transforming extends App{
   var df2M = df2.drop("chariter", "cifsn", "fileid", "stusab", "LOGRECNO")
   //df2M = df2M.withColumnRenamed("LOGRECNO","LOGRECNO2")
 
-  var df1M = df1.withColumn("id1", monotonically_increasing_id)
-  df2M = df2M.withColumn("id2", monotonically_increasing_id)
+  var df1M = df1.withColumn("id1", monotonically_increasing_id)  // Makes id column to join
+  df2M = df2M.withColumn("id2", monotonically_increasing_id)    // Then it will be dropped
 
   df1M.createOrReplaceTempView("Co1ImpM")
   df1M.show()
@@ -43,7 +43,7 @@ object transforming extends App{
   df2M.createOrReplaceTempView("Co2ImpM")
   df2M.show()
 
-  var export1 = df1M.join(df2M,col("id1")===col("id2"),"inner")
+  var export1 = df1M.join(df2M,col("id1")===col("id2"),"inner") //Joines with id column then drops it.
     .drop("id1","id2")
 
   file.outputcsv("CoCombine1",export1)
