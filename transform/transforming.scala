@@ -1,5 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.sql.functions.{col, monotonically_increasing_id}
 
 object transforming extends App{
   val t1 = System.nanoTime
@@ -27,17 +28,26 @@ object transforming extends App{
 //  df2.write.mode("overwrite").saveAsTable("Co2")
 //  spark.sql("SELECT * FROM Co2").show()
 
+// ------------------------------------------------------Modifications--------------------------------------------------------------------------------
+
   println("df2M")
-  val df2M = df2.drop("chariter", "cifsn", "fileid", "stusab")
+  var df2M = df2.drop("chariter", "cifsn", "fileid", "stusab", "LOGRECNO")
+  //df2M = df2M.withColumnRenamed("LOGRECNO","LOGRECNO2")
+
+  var df1M = df1.withColumn("id1", monotonically_increasing_id)
+  df2M = df2M.withColumn("id2", monotonically_increasing_id)
+
+  df1M.createOrReplaceTempView("Co1ImpM")
+  df1M.show()
+
   df2M.createOrReplaceTempView("Co2ImpM")
   df2M.show()
 
-  println("export1")
-  var export1 = df1.join(df2M,"LOGRECNO")
-  export1.show()
-    //spark.sql(f"SELECT * FROM Co1Imp tbl1, Co2ImpM tbl2 where tbl1.LOGRECNO == tbl2.LOGRECNO")
-  file.outputcsv("CoCombine1",export1)
+  var export1 = df1M.join(df2M,col("id1")===col("id2"),"inner")
+    .drop("id1","id2")
 
+  file.outputcsv("CoCombine1",export1)
+  export1.show()
 
   spark.sql("SHOW DATABASES").show()
   spark.sql("SHOW TABLES").show()
