@@ -27,7 +27,6 @@ object extract {
 
   def main(args: Array[String]): Unit = {
 
-
     //2D array with all folders and abbreviations for 2000 census data
     val locations = Array( Array("0US_Summary", "us"),
       Array("Alabama", "al"),
