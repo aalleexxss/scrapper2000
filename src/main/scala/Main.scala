@@ -4,11 +4,9 @@ import java.net.URL
 import java.io.{File, FileInputStream, FileOutputStream, FileWriter, InputStream, PrintWriter}
 import java.util.zip.ZipInputStream
 import scala.io.Source
-import util.Try
 
 object Main {
-  val t1 = System.nanoTime
-  
+
   //Downloads a file given some url and file name
   def fileDownload(url: String, fileName: String) = {
     new URL(url) #> new File(fileName) !!
@@ -26,7 +24,6 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
-
 
     //2D array with all folders and abbreviations for 2000 census data
     val locations = Array( Array("0US_Summary", "us"),
@@ -84,7 +81,6 @@ object Main {
       Array("Wyoming", "wy"),
     )
 
-
     //downloads zip files from 2000 census data, unzips files
     for (i <- locations) {
       val state = i(0)
@@ -127,7 +123,7 @@ object Main {
 
     //fills in 00001.csv and 00002.csv with field names and data from upl files
     for (states <- locations) {
-      val file1Name = s"${states(1)}00001.csv"
+      val file1Name = s"results/${states(1)}00001.csv"
       val upl1Name = s"${states(1)}00001.upl"
       val writer1 = new FileWriter(file1Name, true)
       writer1.write(fields1)
@@ -137,7 +133,7 @@ object Main {
       }
       writer1.close()
 
-      val file2Name = s"${states(1)}00002.csv"
+      val file2Name = s"results/${states(1)}00002.csv"
       val upl2Name = s"${states(1)}00002.upl"
       val writer2 = new FileWriter(file2Name, true)
       writer2.write(fields2)
@@ -166,7 +162,7 @@ object Main {
 
     //iterates through
     for (states <- locations) {
-      val csvName = s"${states(1)}geo.csv"
+      val csvName = s"results/${states(1)}geo.csv"
       val uplName = s"${states(1)}geo.upl"
       val geoWriter = new FileWriter(csvName, true)
       geoWriter.write(geoHeaders)
@@ -183,25 +179,29 @@ object Main {
       geoWriter.close()
     }
 
-
-
-    /* Ignore this for now!
+    //Takes out all the unnecessary spaces in geo files
     for (states <- locations) {
-      val geoCsv = s"${states(1)}geo.csv"
-      val cleanCsv = s"${states(1)}cleanGeo.csv"
+      val geoCsv = s"results/${states(1)}geo.csv"
+      val cleanCsv = s"results/${states(1)}cleanGeo.csv"
       val geoWriter = new FileWriter(cleanCsv, true)
-      var cleanedLine = ""
       for (lines <- Source.fromFile(geoCsv).getLines()) {
+        var cleanedLine = ""
         for (elements <- lines.split(",")) {
           cleanedLine += elements.trim() + ","
         }
         cleanedLine = cleanedLine.substring(0, cleanedLine.length()-1) + "\n"
         geoWriter.write(cleanedLine)
       }
+      geoWriter.close()
     }
 
-     */
-    val duration = (System.nanoTime - t1)
-    println("Code Lasted: " + (duration/1000000000) + " Seconds")
+    //gets rid of all unnecessary files
+    for (states <- locations) {
+      val deleteArray = Array(s"results/${states(1)}geo.csv", s"${states(1)}00001.upl", s"${states(1)}00002.upl", s"${states(1)}geo.upl")
+      for (files <- deleteArray) {
+        println(files)
+        new File(files).delete()
+      }
+    }
   }
 }
